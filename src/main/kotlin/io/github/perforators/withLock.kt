@@ -1,7 +1,6 @@
 package io.github.perforators
 
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -26,7 +25,6 @@ suspend fun Mutex.withScopedLock(action: suspend LockScope.() -> Unit) {
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
     }
-    withLock {  }
     val scope = reusableScopes.poll() ?: LockScopeImpl()
     scope.owner = this
     lock(scope)

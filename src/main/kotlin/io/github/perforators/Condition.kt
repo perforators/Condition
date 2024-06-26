@@ -7,6 +7,7 @@ interface Condition {
 
     /**
      * Causes the current coroutine to suspend until it is signalled or cancelled.
+     * It can only be called inside [withScopedLock].
      *
      * **Important:** When returning from this method due to the cancellation of the coroutine,
      * there is a chance that the lock may be in an unlocked state.
