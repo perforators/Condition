@@ -21,7 +21,7 @@ private const val MAX_POOL_SIZE = 128
  * @return the return value of the action.
  */
 @OptIn(ExperimentalContracts::class)
-suspend fun Mutex.withScopedLock(action: suspend LockScope.() -> Unit) {
+suspend fun <T> Mutex.withScopedLock(action: suspend LockScope.() -> T): T {
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
     }
