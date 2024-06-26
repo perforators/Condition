@@ -7,7 +7,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 private class LockScopeImpl : LockScope {
-    @Volatile var owner: Mutex? = null
+    var owner: Mutex? = null
     override fun relatedTo(mutex: Mutex) = owner == mutex
 }
 
