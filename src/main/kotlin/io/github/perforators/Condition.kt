@@ -33,7 +33,7 @@ private class ConditionImpl(
 
     override suspend fun LockScope.await() {
         require(relatedTo(owner)) {
-            "await() must be call in the scope of the mutex, that owns the condition."
+            "await() must be call in the scope of the mutex, that owns the condition!"
         }
         owner.unlock(this@await)
         signals.receive()
