@@ -1,6 +1,7 @@
 package io.github.perforators
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.sync.Mutex
 
 interface Condition {
@@ -54,9 +55,8 @@ private class ConditionImpl(
 
     override fun signalAll() {
         while (true) {
-            val result = signals.trySend(Unit)
-            if (!result.isSuccess) {
-                break
+            signals.trySend(Unit).onFailure {
+                return
             }
         }
     }
