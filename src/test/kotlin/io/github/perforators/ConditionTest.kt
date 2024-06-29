@@ -8,10 +8,33 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
+import kotlin.test.assertEquals
 
 class ConditionTest {
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `signalAll() must wake up all suspended coroutines`() = runTest {
+        val mutex = Mutex()
+        val condition = mutex.newCondition()
+
+        var wakeUpCount = 0
+        repeat(10) {
+            launch {
+                mutex.withScopedLock {
+                    with(condition) { await() }
+                    wakeUpCount++
+                }
+            }
+        }
+        advanceUntilIdle()
+
+        condition.signalAll()
+
+        advanceUntilIdle()
+
+        assertEquals(10, wakeUpCount)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test

@@ -18,11 +18,11 @@ internal class ScopePool(
     }
 
     fun offer(scope: LockScope) {
-        if (scope !is ReusableScope) return
-        if (reusableScopes.size < capacity) {
-            scope.owner = null
-            reusableScopes.offer(scope)
+        if (scope !is ReusableScope || reusableScopes.size >= capacity) {
+            return
         }
+        scope.owner = null
+        reusableScopes.offer(scope)
     }
 
     private class ReusableScope : LockScope {

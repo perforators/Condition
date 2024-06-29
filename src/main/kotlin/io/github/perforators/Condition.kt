@@ -21,6 +21,14 @@ interface Condition {
      * That coroutine must then re-acquire the lock before returning from [await].
      */
     fun signal()
+
+    /**
+     * Wakes up all waiting coroutines.
+     *
+     * If any coroutines are waiting on this condition then they are all woken up.
+     * Each coroutine must re-acquire the lock before it can return from await.
+     */
+    fun signalAll()
 }
 
 fun Mutex.newCondition(): Condition = ConditionImpl(this)
@@ -42,5 +50,14 @@ private class ConditionImpl(
 
     override fun signal() {
         signals.trySend(Unit)
+    }
+
+    override fun signalAll() {
+        while (true) {
+            val result = signals.trySend(Unit)
+            if (!result.isSuccess) {
+                break
+            }
+        }
     }
 }
