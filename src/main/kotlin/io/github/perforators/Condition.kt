@@ -1,5 +1,6 @@
 package io.github.perforators
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.sync.Mutex
@@ -39,13 +40,19 @@ private class ConditionImpl(
 ) : Condition {
 
     private val signals = Channel<Unit>()
+    private val numberWaits = atomic(0)
 
     override suspend fun LockScope.await() {
         require(relatedTo(owner)) {
             "await() must be call in the scope of the mutex, that owns the condition!"
         }
         owner.unlock(this@await)
-        signals.receive()
+        try {
+            numberWaits.incrementAndGet()
+            signals.receive()
+        } finally {
+            numberWaits.decrementAndGet()
+        }
         owner.lock(this@await)
     }
 
@@ -54,10 +61,8 @@ private class ConditionImpl(
     }
 
     override fun signalAll() {
-        while (true) {
-            signals.trySend(Unit).onFailure {
-                return
-            }
+        repeat(numberWaits.value) {
+            signals.trySend(Unit).onFailure { return }
         }
     }
 }

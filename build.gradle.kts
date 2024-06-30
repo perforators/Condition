@@ -6,6 +6,7 @@ plugins {
     `maven-publish`
     `kotlin-dsl`
     id("org.jreleaser") version "1.12.0"
+    id("org.jetbrains.kotlinx.atomicfu") version "0.25.0"
 }
 
 group = "io.github.perforators"
