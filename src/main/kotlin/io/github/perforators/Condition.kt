@@ -1,6 +1,7 @@
 package io.github.perforators
 
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.sync.Mutex
@@ -33,13 +34,25 @@ interface Condition {
     fun signalAll()
 }
 
+/**
+ * Returns a new [Condition] instance that is bound to this [Mutex] instance.
+ *
+ * Before waiting on the condition the lock must be held by the current coroutine.
+ * A call to [Condition.await] will atomically release the lock before waiting and re-acquire
+ * the lock before the wait returns.
+ *
+ * @return A new [Condition] instance for this [Mutex] instance.
+ */
 fun Mutex.newCondition(): Condition = ConditionImpl(this)
 
 private class ConditionImpl(
     private val owner: Mutex
 ) : Condition {
 
-    private val signals = Channel<Unit>()
+    private val signals = Channel<Unit>(
+        capacity = Channel.RENDEZVOUS,
+        onBufferOverflow = BufferOverflow.SUSPEND
+    )
     private val numberWaits = atomic(0)
 
     override suspend fun LockScope.await() {
