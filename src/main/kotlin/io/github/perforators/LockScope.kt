@@ -7,7 +7,8 @@ sealed interface LockScope {
     fun relatedTo(mutex: Mutex): Boolean
 }
 
-internal class ScopePool(
+@InternalConditionApi
+class ScopePool(
     private val capacity: Int = DEFAULT_POOL_CAPACITY
 ) {
 
@@ -35,4 +36,5 @@ internal class ScopePool(
     }
 }
 
-internal val scopePool = ScopePool()
+@InternalConditionApi
+val globalScopePool = ScopePool()

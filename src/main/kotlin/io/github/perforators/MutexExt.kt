@@ -11,12 +11,12 @@ import kotlin.contracts.contract
  *
  * @return the return value of the action.
  */
-@OptIn(ExperimentalContracts::class)
-suspend fun <T> Mutex.withScopedLock(action: suspend LockScope.() -> T): T {
+@OptIn(ExperimentalContracts::class, InternalConditionApi::class)
+suspend inline fun <T> Mutex.withScopedLock(action: LockScope.() -> T): T {
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
     }
-    val scope = scopePool.poll(this)
+    val scope = globalScopePool.poll(this)
     lock(scope)
     return try {
         scope.action()
@@ -24,6 +24,6 @@ suspend fun <T> Mutex.withScopedLock(action: suspend LockScope.() -> T): T {
         if (holdsLock(scope)) {
             unlock(scope)
         }
-        scopePool.offer(scope)
+        globalScopePool.offer(scope)
     }
 }
